@@ -39,9 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $document = $collection->findOne(['email' => $email]);
 
-        $hashed_password = $document['password'];
-
         if (isset($document["email"])) {
+
+            $hashed_password = $document['password'];
 
             if (check_password($password, $hashed_password)) {
                 // Password is correct, so start a new session

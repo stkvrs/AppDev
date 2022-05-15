@@ -31,7 +31,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     require_once __DIR__ . "/models/summary.php";
     storeSummary();
     $result = getSummary();
-    
+
     ?>
 
     <ul class="nav justify-content-end">
@@ -39,34 +39,85 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <a href="logout.php" class="btn btn-danger ml-3">Sign Out of Your Account</a>
         </li>
     </ul>
-    <h1 class="my-1">Hi, <b><?php echo htmlspecialchars($_SESSION["email"]); ?></b>. Here are today's symmary.</h1>
+    <h1 class="my-1">Hi, <b><?php echo htmlspecialchars($_SESSION["email"]); ?></b>. Here is today's symmary.</h1>
 
-    <table class="table table-bordered mt-4">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Country</th>
-                <th scope="col">Total Cases</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            // Get the countries from generic JSON
-            $countries = $result['Countries'];
+    <div class="d-flex flex-column">
+        <div>
+            <canvas id="barchart"></canvas>
+        </div>
 
-            foreach ($countries as $key=>$country) {?>
-            <tr>
-                <th scope="row"><?php echo ++$key;?></th>
-                <td><?php echo $country['Country'];?></td>
-                <td><?php echo $country['TotalConfirmed'];?></td>
-            </tr>
-            <?php
-            }
-            ?>
-        </tbody>
-    </table>
+        <table class="table table-bordered mt-5">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Country</th>
+                    <th scope="col">Total Cases</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                // Get the countries from generic JSON
+                $countries = $result['Countries'];
+
+                foreach ($countries as $key => $country) { ?>
+                    <tr>
+                        <th scope="row"><?php echo ++$key; ?></th>
+                        <td><?php echo $country['Country']; ?></td>
+                        <td><?php echo $country['TotalConfirmed']; ?></td>
+                    </tr>
+                <?php
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        const countries_data = <?= json_encode($countries); ?>;
+
+        let labels = [];
+        let data = [];
+
+        for (let index = 0; index < 5; index++) {
+            labels.push(countries_data[index].Country);
+            data.push(countries_data[index].TotalConfirmed);
+        }
+        //Initialize bar chart
+        const checkBarChart = Chart.getChart("barchart");
+
+        //Load total bar chart data
+        const totalData = {
+            labels,
+            datasets: [{
+                label: "Total data",
+                backgroundColor: "rgb(0, 14, 194)",
+                borderColor: "rgb(0, 0, 0)",
+                data
+            }, ],
+        };
+
+        //Total bar chart config
+        const totalConfig = {
+            type: "bar",
+            data: totalData,
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "right"
+                    }
+                }
+            },
+        };
+
+        //Create bar chart
+        const totalBarChart = new Chart(
+            document.getElementById("barchart"),
+            totalConfig
+        );
+    </script>
 </body>
 
 </html>
